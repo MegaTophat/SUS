@@ -1,11 +1,11 @@
-VAR x = 5
-VAR y = 4
-PRINT "HelloWorld"
-VAR z = x + y
+x = 5
+y = 4
+PRINT "Hello World"
+z = x + y
 PRINT z
-VAR t = (x + y) + 5
+t = (x + y) + 5
 PRINT t
 sus t < 14
-  PRINT "Susindeed"
+  PRINT "Sus indeed"
   PRINT "BUG"
-SWOTUS
+swotus
