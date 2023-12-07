@@ -159,7 +159,7 @@ public class Lexer {
       return false;
 
     // this is an integer
-    Token tok = Token.INTLIT;
+    Token tok = Token.REALLIT;
     consumeInteger();
 
     // check for a dot
