@@ -21,6 +21,7 @@ public enum TokenType {
     GREATER_THAN_OR_EQUAL,
     LESS_THAN,
     GREATER_THAN,
+    NOT_EQUAL,
     VARIABLE_NAME,
     ARRAY,
     ARRAY_BOUNDARY,
