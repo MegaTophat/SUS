@@ -1,0 +1,35 @@
+numDisks = 3
+From_rod = 'A'
+To_rod = 'C'
+Aux_rod = 'B'
+
+PRINT "Tower of Hanoi Solution for " + numDisks + " disks:"
+
+susmoney move_count < (1 << numDisks) swaus
+  disk = move_count ® 3
+
+  sus disk == 0 swaus
+    sus numDisks % 2 == 1 swaus
+      sus move_count & (move_count - 1) != 0 swaus
+        disk = (disk + 1) ® 3
+      SWOTUS
+    SWOTUS
+      sus move_count & (move_count - 1) != 0 swaus
+        disk = (disk + 2) ® 3
+      SWOTUS
+
+    sus disk == 1 swaus
+      PRINT "Move disk 1 from rod " + From_rod + " to rod " + To_rod
+    SWOTUS
+    sus disk == 2 swaus
+      PRINT "Move disk 1 from rod " + From_rod + " to rod " + Aux_rod
+    SWOTUS
+    sus disk == 0 swaus
+      PRINT "Move disk 1 from rod " + Aux_rod + " to rod " + To_rod
+    SWOTUS
+
+    move_count++
+    numDisks = numDisks - 1
+  SWOTUS
+SWOTUS
+

@@ -1,0 +1,11 @@
+VAR x = 5
+y = 4
+PRINT "HelloWorld"
+z = x + y
+PRINT z
+t = (x + y) + 5
+PRINT t
+sus t < 14
+  PRINT "Susindeed"
+  PRINT "BUG"
+SWOTUS
