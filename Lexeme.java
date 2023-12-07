@@ -1,5 +1,5 @@
 class Lexeme {
-    public Token tok;
+    public TokenType tok;
     public String str;
     public int line;
     public int col;
@@ -8,7 +8,7 @@ class Lexeme {
 
     }
 
-    public Lexeme(Token tok, String str, int line, int col) {
+    public Lexeme(TokenType tok, String str, int line, int col) {
         this.tok = tok;
         this.str = str;
         this.line = line;
@@ -32,7 +32,7 @@ class Lexeme {
     public static void main(String[] args) {
         Lexeme l = new Lexeme();
 
-        l.tok = Token.PLUS;
+        l.tok = TokenType.PLUS;
         l.str = "+";
         l.line = 1;
         l.col = 2;
