@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Sus {
     private final List<Lexeme> lexemes;
@@ -55,6 +57,11 @@ public class Sus {
 
     private TokenType determineTokenType(String token) {
         // Logic to determine the token type goes here
+        final Pattern numberPattern = Pattern.compile("\\d+");
+        final Matcher numberMatcher = numberPattern.matcher(token);
+        if (numberMatcher.matches()) {
+            System.out.println("We fucking parsed a number!");
+        }
 
         switch (token) {
             case "+":
@@ -268,13 +275,6 @@ public class Sus {
                 throw new RuntimeException("Invalid token: " + currentLexeme.token());
             }
         }
-    }
-
-    private enum TokenType {
-        NUMBER, PLUS, MINUS, TIMES, DIVIDE, EQUAL, LPAREN, RPAREN,
-        STRING, PRINT, VAR, WORD, SUS, SWOTUS,
-        LESS_THAN_OR_EQUAL, GREATER_THAN_OR_EQUAL, LESS_THAN, GREATER_THAN, EQUALITY,
-        UNKNOWN
     }
 
     private record Lexeme(String token, TokenType type) {
