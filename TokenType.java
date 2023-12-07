@@ -14,6 +14,7 @@ public enum TokenType {
     PRINT,
     READ,
     SUS,
+    SUSMONEY,
     SWAUS,
     SWOTUS,
     LESS_THAN_OR_EQUAL,
