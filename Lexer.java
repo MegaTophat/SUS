@@ -1,5 +1,8 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /**
  * Lexer for the calc language
@@ -276,8 +279,18 @@ public class Lexer {
     read();
   }
 
-  public static void main(String[] args) {
-    Lexer lex = new Lexer(System.in);
+  public static void main(String[] args) throws FileNotFoundException {
+    final InputStream inputStream;
+    
+    if (args.length > 0) {
+      final String workingDirectory = System.getProperty("user.dir");
+      File file = new File(workingDirectory, args[0]);
+      inputStream = new FileInputStream(file);
+    } else {
+      inputStream = System.in;
+    }
+    
+    Lexer lex = new Lexer(inputStream);
     Lexeme tok;
 
     do {
