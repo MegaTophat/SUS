@@ -17,7 +17,7 @@ public class Sus {
         this.currentLexemeIndex = 0;
         this.variables = new HashMap<>();
     }
-
+//hello
     public static void main(String[] args) throws IOException {
         final String sourceCode;
 
