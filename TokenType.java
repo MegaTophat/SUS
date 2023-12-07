@@ -24,5 +24,6 @@ public enum TokenType {
     ARRAY,
     ARRAY_BOUNDARY,
     DOT,
+    EOF,
     UNKNOWN
 }
