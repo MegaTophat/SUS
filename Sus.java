@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -82,8 +83,6 @@ public class Sus {
                 return TokenType.STRING;
             case "PRINT":
                 return TokenType.PRINT;
-            case "VAR":
-                return TokenType.VAR;
             case "sus":
                 return TokenType.SUS;
             case "SWOTUS":
@@ -96,12 +95,8 @@ public class Sus {
                 return TokenType.LESS_THAN;
             case ">":
                 return TokenType.GREATER_THAN;
-            case "==":
-                return TokenType.EQUALITY;
             case "\\d+":
                 return TokenType.NUMBER;
-            case "\\w+":
-                return TokenType.WORD;
             default:
                 return TokenType.UNKNOWN;
         }
@@ -165,10 +160,6 @@ public class Sus {
         if (currentLexeme.type() == TokenType.NUMBER) {
             // Integer literal
             return Integer.parseInt(currentLexeme.token());
-        } else if (currentLexeme.type() == TokenType.WORD) {
-            // Variable reference
-            String variableName = currentLexeme.token();
-            return variables.getOrDefault(variableName, 0);
         } else if (currentLexeme.type() == TokenType.LPAREN) {
             // Handle parentheses for grouping
             int result = parseExpression();
@@ -216,22 +207,6 @@ public class Sus {
                     }
                 } else {
                     throw new RuntimeException("Unexpected end of input");
-                }
-            } else if (currentLexeme.type() == TokenType.VAR) {
-                // Handle variable declaration
-                Lexeme variableNameLexeme = getNextLexeme();
-                String variableName = variableNameLexeme.token();
-                if (variableName != null && variableName.matches("\\w+")) {
-                    // Declare a variable with an initial value
-                    Lexeme equalsLexeme = getNextLexeme();
-                    if (equalsLexeme.token().equals("=")) {
-                        int value = parseExpression();
-                        variables.put(variableName, value);
-                    } else {
-                        throw new RuntimeException("Variable declaration must include '='");
-                    }
-                } else {
-                    throw new RuntimeException("Invalid VAR statement");
                 }
             } else if (currentLexeme.type() == TokenType.SUS) {
                 // Handle 'sus' statement (if statement)
