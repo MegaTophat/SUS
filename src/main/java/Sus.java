@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +24,7 @@ public class Sus {
         final String sourceCode;
 
         if (args.length == 0) {
-            // Input filename from the user
+            // Read filename from the user
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter the filename: ");
             String filename = scanner.nextLine();
