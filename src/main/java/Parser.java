@@ -249,8 +249,8 @@
         result.setRight(parseTerm());
         return parseTerm2(result);
       
-    } else if(match(TokenType.MOD) != null) {
-        Mod result  = new Mod();
+    } else if(match(TokenType.REMAINDER) != null) {
+        Remainder result  = new Remainder();
         result.setLeft(left);
         result.setRight(parseFactor());
         return parseTerm2(result);

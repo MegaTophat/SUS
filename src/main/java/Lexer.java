@@ -68,13 +68,6 @@ public class Lexer {
         }
     }
 
-    // skip to the end of the line
-    private void skipToEOL() {
-        while (!eof && cur != '\n') {
-            read();
-        }
-    }
-
     Lexeme next() {
         // start the matching
         skip();
@@ -119,6 +112,8 @@ public class Lexer {
             case '*' -> TokenType.TIMES;
             case '/' -> TokenType.DIVIDE;
             case '^' -> TokenType.POW;
+            case '`' -> TokenType.ARRAY_BOUNDARY;
+            case '®' -> TokenType.REMAINDER;
             case '(' -> TokenType.LPAREN;
             case ')' -> TokenType.RPAREN;
             case '\n' -> TokenType.NEWLINE;
@@ -207,11 +202,11 @@ public class Lexer {
         // match keywords, then variable names as lowest priority
         final String str = curString.toString();
         switch (str) {
-            case "MOD" -> setToken(TokenType.MOD);
             case "PRINT" -> setToken(TokenType.PRINT);
             case "READ" -> setToken(TokenType.READ);
             case "sus" -> setToken(TokenType.SUS);
             case "swotus" -> setToken(TokenType.SWOTUS);
+            case "shower" -> setToken(matchComment());
             case "susmoney" -> setToken(TokenType.SUSMONEY);
             case "ARRAY" -> setToken(TokenType.ARRAY);
             default ->
@@ -220,6 +215,24 @@ public class Lexer {
         }
 
         return true;
+    }
+
+    private TokenType matchComment() {
+        //consume the space character in between shower thought
+        consume();
+
+        while (this.cur != '\n' && !this.eof) {
+            consume();
+        }
+
+        final String string = curString.toString();
+
+        if (string.startsWith("shower thought") && string.endsWith("sandwich")) {
+            //We are in a comment
+            return TokenType.COMMENT;
+        }
+
+        return TokenType.UNKNOWN;
     }
 
     /// Match a multi-character but fixed width

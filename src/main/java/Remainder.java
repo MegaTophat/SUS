@@ -1,4 +1,4 @@
-public class Mod extends BinaryOp
+public class Remainder extends BinaryOp
 {
   public EvalResult eval(RefEnv env) {
     // get the operands
@@ -13,7 +13,7 @@ public class Mod extends BinaryOp
 
   public void print(int depth)  {
     getRight().print(depth+1);
-    System.out.printf("%"+(depth+1)+"smod\n", "");
+    System.out.printf("%"+(depth+1)+"sremainder\n", "");
     getLeft().print(depth+1);
   }
 }
