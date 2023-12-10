@@ -1,41 +1,9 @@
-class Lexeme {
-    public TokenType tok;
-    public String str;
-    public int line;
-    public int col;
-
-    public Lexeme() {
-
-    }
-
-    public Lexeme(TokenType tok, String str, int line, int col) {
-        this.tok = tok;
-        this.str = str;
-        this.line = line;
-        this.col = col;
-    }
-
+record Lexeme(TokenType tokenType, String associatedCharacters, int lineNum, int columnNum) {
     public String toString() {
-        StringBuilder s = new StringBuilder();
-
-        s.append(tok);
-        s.append(" at line: ");
-        s.append(line);
-        s.append(" column: ");
-        s.append(col);
-        s.append(" \"");
-        s.append(str);
-        s.append("\"");
-        return s.toString();
-    }
-
-    public static void main(String[] args) {
-        Lexeme l = new Lexeme();
-
-        l.tok = TokenType.PLUS;
-        l.str = "+";
-        l.line = 1;
-        l.col = 2;
-        System.out.println(l);
+        return this.tokenType +
+                " at line: " + this.lineNum +
+                " column: " + this.columnNum +
+                " (" + this.associatedCharacters +
+                ')';
     }
 }

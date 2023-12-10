@@ -1,16 +1,29 @@
-public class Branch extends BinaryOp
+public class Branch extends NaryOp
 {
-  public EvalResult eval(RefEnv env) {
-    if(getLeft().eval(env).asBoolean()) { 
-      getRight().eval(env);
+  public EvalResult eval(RefEnv env)
+  {
+    EvalResult result = null;
+
+    // execute each child
+    for(int i=0; i<getSize(); i++) {
+      result = getChild(i).eval(env);
     }
     
-    return new EvalResult();
+    return result;
   }
 
-  public void print(int depth)  {
-    getRight().print(depth+1);
-    System.out.printf("%"+(depth+1)+"sIF\n", "");
-    getLeft().print(depth+1);
+
+  public void print(int depth) {
+    int mid = getSize()/2;
+
+    for(int i=0; i<mid; i++) {
+      getChild(i).print(depth+1);
+    }
+
+    System.out.printf("%"+(depth+1)+"sPROGRAM\n", "");
+    
+    for(int i=mid; i<getSize(); i++) {
+      getChild(i).print(depth+1);
+    }
   }
 }

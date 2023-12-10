@@ -3,110 +3,112 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 /**
- * Lexer for the calc language
+ * Lexer for SUS
  */
 public class Lexer {
-    /// Source of the character stream
-    private final InputStream file;
+    // Stream of characters for us to lex
+    private final InputStream inputStream;
+    // Our working token builder storage
+    private final StringBuilder currentTokenString;
 
-    /// Current character being matched
-    private char cur;
+    // Character currently being matched to something
+    private char currentCharacter;
 
-    /// Current Lexeme
-    private Lexeme curLex;
+    // Lexeme storage variable
+    private Lexeme currentLexeme;
 
-    /// Line and column number of input
-    private int line;
-    private int col;
+    // Line, column, and storage variables
+    private int lineNum;
+    private int columnNum;
     private int startLine;
     private int startCol;
-    private boolean eof;
+    private boolean reachedEndOfFile;
 
-    /// The lexeme that we are accumulating
-    private StringBuilder curString;
+    // Set up the infrastructure needed to begin lexing a new set of tokens
+    public Lexer(final InputStream inputStream) {
+        this.inputStream = inputStream;
+        this.currentTokenString = new StringBuilder();
+        this.lineNum = 1;
+        this.columnNum = 0;
+        this.reachedEndOfFile = false;
 
-    /// Construct a lexer for the given input stream
-    public Lexer(InputStream file) {
-        this.file = file;
-        this.line = 1;
-        this.col = 0;
-        this.eof = false;
-        read();
+        this.readNextLiteralCharacter();
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(final String[] args) throws FileNotFoundException {
         final InputStream inputStream;
 
         if (args.length > 0) {
             final String workingDirectory = System.getProperty("user.dir");
-            File file = new File(workingDirectory, args[0]);
+            final File file = new File(workingDirectory, args[0]);
+
             inputStream = new FileInputStream(file);
         } else {
             inputStream = System.in;
         }
 
         Lexer lex = new Lexer(inputStream);
-        Lexeme tok;
+        Lexeme token;
 
         do {
-            tok = lex.next();
-            System.out.println(tok);
-        } while (tok.tok != TokenType.EOF);
+            token = lex.nextLexeme();
+            System.out.println(token);
+        } while (token.tokenType() != TokenType.EOF);
     }
 
-    private void setToken(TokenType tok) {
-        curLex = new Lexeme(tok, curString.toString(), startLine, startCol);
+    private void setToken(final TokenType token) {
+        this.currentLexeme = new Lexeme(token, this.currentTokenString.toString(), this.startLine, this.startCol);
     }
 
-    // skip characters we wish to ignore
-    private void skip() {
+    // skip extraneous whitespace
+    private void skipIgnoredCharacters() {
         // skip all the blank characters
-        while (cur != '\n' && (Character.isSpaceChar(cur))) {
-            read();
+        while (this.currentCharacter != '\n' && (Character.isSpaceChar(this.currentCharacter))) {
+            this.readNextLiteralCharacter();
         }
     }
 
-    Lexeme next() {
+    Lexeme nextLexeme() {
         // start the matching
-        skip();
-        curString = new StringBuilder();
-        startLine = line;
-        startCol = col;
+        this.skipIgnoredCharacters();
+        this.currentTokenString.delete(0, this.currentTokenString.length());
+        this.startLine = this.lineNum;
+        this.startCol = this.columnNum;
 
         // handle eof
-        if (eof) {
-            setToken(TokenType.EOF);
-            return curLex;
+        if (this.reachedEndOfFile) {
+            this.setToken(TokenType.EOF);
+            return this.currentLexeme();
         }
 
-        if (match_single())
-            return curLex;
-        else if (match_number())
-            return curLex;
-        else if (matchWord())
-            return curLex;
-        else if (matchFixed())
-            return curLex;
-        else if (matchString()) {
-            return curLex;
+        if (this.matchSingleCharacterToken())
+            return this.currentLexeme();
+        else if (this.matchNumber())
+            return this.currentLexeme();
+        else if (this.matchWord())
+            return this.currentLexeme();
+        else if (this.matchFixed())
+            return this.currentLexeme();
+        else if (this.matchString()) {
+            return this.currentLexeme();
         } else
-            consume();
+            this.consumeCurrentCharacter();
 
         // invalid
-        setToken(TokenType.UNKNOWN);
-        return curLex;
+        this.setToken(TokenType.UNKNOWN);
+        return this.currentLexeme();
     }
 
-    Lexeme cur() {
-        return curLex;
+    Lexeme currentLexeme() {
+        return this.currentLexeme;
     }
 
-    /// Match our single character tokens
-    /// Return true on success, false on failure.
-    public boolean match_single() {
-        final TokenType tok = switch (cur) {
+    // Attempt to match tokens which are a single character
+    public boolean matchSingleCharacterToken() {
+        final TokenType token = switch (this.currentCharacter) {
             case '+' -> TokenType.PLUS;
             case '-' -> TokenType.MINUS;
             case '*' -> TokenType.TIMES;
@@ -123,176 +125,187 @@ public class Lexer {
         };
 
         // did not match
-        if (tok == TokenType.UNKNOWN) {
+        if (token == TokenType.UNKNOWN) {
             return false;
         }
 
-        // match
-        consume();
-        setToken(tok);
+        // one of the single character tokens matched, consume it
+        this.consumeCurrentCharacter();
+        this.setToken(token);
+
         return true;
     }
 
-    /// Match an integer
+    // Match an integer
     private void consumeInteger() {
-        while (Character.isDigit(cur)) {
-            consume();
+        while (Character.isDigit(this.currentCharacter)) {
+            this.consumeCurrentCharacter();
         }
     }
 
+    // consume characters until we hit the other " marker, the end of the line, or the end of the file
     private void consumeString() {
-        while (this.cur != '"' && this.cur != '\n' && !this.eof) {
-            consume();
+        while (this.currentCharacter != '"' && this.currentCharacter != '\n' && !this.reachedEndOfFile) {
+            this.consumeCurrentCharacter();
         }
     }
 
     private boolean matchString() {
-        if (this.cur != '"') {
+        if (this.currentCharacter != '"') {
             return false;
         }
-        consume();
-        consumeString();
 
-        if (this.cur != '"') {
-            setToken(TokenType.UNKNOWN);
+        // consume the beginning " mark
+        this.consumeCurrentCharacter();
+        this.consumeString();
+
+        if (this.currentCharacter != '"') {
+            this.setToken(TokenType.UNKNOWN);
             return false;
         }
 
         // consume the ending " symbol
-        consume();
-        setToken(TokenType.STRING);
+        this.consumeCurrentCharacter();
+        this.setToken(TokenType.STRING);
         return true;
     }
 
-    /// Match a Number
-    private boolean match_number() {
-        if (!Character.isDigit(cur))
+    /// attempt to match a number
+    private boolean matchNumber() {
+        if (!Character.isDigit(this.currentCharacter))
             return false;
 
-        // this is an integer
-        consumeInteger();
+        // consume the beginning part of the number, potentially the entire number
+        this.consumeInteger();
 
-        // check for a dot
-        if (cur != '.') {
-            setToken(TokenType.NUMBER);
+        // is there a dot?
+        if (this.currentCharacter != '.') {
+            this.setToken(TokenType.NUMBER);
             return true;
         }
 
         // consume the singular dot
-        consume();
-        if (Character.isDigit(cur)) {
-            consumeInteger();
-            setToken(TokenType.NUMBER);
+        this.consumeCurrentCharacter();
+
+        if (Character.isDigit(this.currentCharacter)) {
+            // consume the ending part of the number
+            this.consumeInteger();
+            this.setToken(TokenType.NUMBER);
         } else {
-            setToken(TokenType.UNKNOWN);
+            // an integer followed by a dot and not another integer isn't a number
+            this.setToken(TokenType.UNKNOWN);
         }
 
         return true;
     }
 
     private boolean matchWord() {
-        if (!Character.isAlphabetic(cur) && cur != '_')
+        if (!Character.isAlphabetic(this.currentCharacter))
             return false;
 
-        // consume letters numbers and _
-        while (Character.isDigit(cur) || Character.isAlphabetic(cur) || cur == '_') {
-            consume();
+        // consume letters
+        while (Character.isAlphabetic(this.currentCharacter)) {
+            this.consumeCurrentCharacter();
         }
 
-        // match keywords, then variable names as lowest priority
-        final String str = curString.toString();
+        // grab the character sequence we just consumed for matching
+        final String str = this.currentTokenString.toString();
+
         switch (str) {
-            case "PRINT" -> setToken(TokenType.PRINT);
-            case "READ" -> setToken(TokenType.READ);
-            case "sus" -> setToken(TokenType.SUS);
-            case "swotus" -> setToken(TokenType.SWOTUS);
-            case "shower" -> setToken(matchComment());
-            case "susmoney" -> setToken(TokenType.SUSMONEY);
-            case "ARRAY" -> setToken(TokenType.ARRAY);
+            case "PRINT" -> this.setToken(TokenType.PRINT);
+            case "READ" -> this.setToken(TokenType.READ);
+            case "sus" -> this.setToken(TokenType.SUS);
+            case "swotus" -> this.setToken(TokenType.SWOTUS);
+            case "swaus" -> this.setToken(TokenType.SWAUS);
+            case "shower" -> this.setToken(this.matchComment());
+            case "susmoney" -> this.setToken(TokenType.SUSMONEY);
+            case "ARRAY" -> this.setToken(TokenType.ARRAY);
             default ->
-                //if it's not a keyword, it's a valid variable name
-                    setToken(TokenType.VARIABLE_NAME);
+                // alphabetical word which isn't a susword, we matched a valid variable name
+                    this.setToken(TokenType.VARIABLE_NAME);
         }
 
         return true;
     }
 
     private TokenType matchComment() {
-        //consume the space character in between shower thought
-        consume();
-
-        while (this.cur != '\n' && !this.eof) {
-            consume();
+        // consume until the end of the line, or we reach EOF
+        while (this.currentCharacter != '\n' && !this.reachedEndOfFile) {
+            this.consumeCurrentCharacter();
         }
 
-        final String string = curString.toString();
+        final String currentTokenString = this.currentTokenString.toString();
 
-        if (string.startsWith("shower thought") && string.endsWith("sandwich")) {
-            //We are in a comment
+        if (currentTokenString.startsWith("shower thought") && currentTokenString.endsWith("sandwich")) {
+            // This is a syntactically correct comment
             return TokenType.COMMENT;
         }
 
         return TokenType.UNKNOWN;
     }
 
-    /// Match a multi-character but fixed width
-    /// token
+    // Match a multi-character fixed width token
     private boolean matchFixed() {
-        if (cur == '<') {
-            consume();
-            setToken(TokenType.LESS_THAN);
+        if (this.currentCharacter == '<') {
+            this.consumeCurrentCharacter();
+            this.setToken(TokenType.LESS_THAN);
 
             // check for the second part
-            if (cur == '=') {
-                consume();
-                setToken(TokenType.LESS_THAN_OR_EQUAL);
+            if (this.currentCharacter == '=') {
+                this.consumeCurrentCharacter();
+                this.setToken(TokenType.LESS_THAN_OR_EQUAL);
             }
 
             return true;
-        } else if (cur == '>') {
-            consume();
-            setToken(TokenType.GREATER_THAN);
-            if (cur == '=') {
-                consume();
-                setToken(TokenType.GREATER_THAN_OR_EQUAL);
+        } else if (this.currentCharacter == '>') {
+            this.consumeCurrentCharacter();
+            this.setToken(TokenType.GREATER_THAN);
+            if (this.currentCharacter == '=') {
+                this.consumeCurrentCharacter();
+                this.setToken(TokenType.GREATER_THAN_OR_EQUAL);
             }
 
             return true;
-        } else if (cur == '!') {
-            consume();
-            if (cur == '=') {
-                consume();
-                setToken(TokenType.NOT_EQUAL);
+        } else if (this.currentCharacter == '!') {
+            this.consumeCurrentCharacter();
+
+            if (this.currentCharacter == '=') {
+                this.consumeCurrentCharacter();
+                this.setToken(TokenType.NOT_EQUAL);
             }
         }
 
         return false;
     }
 
-    /// Read the next character
-    private void read() {
+    // Read the next character
+    private void readNextLiteralCharacter() {
         // handle newline
-        if (cur == '\n') {
-            line++;
-            col = 0;
+        if (this.currentCharacter == '\n') {
+            ++this.lineNum;
+            this.columnNum = 0;
         }
+
+        final int byteRead;
+
         try {
-            int input = file.read();
-            cur = (char) input;
-            col++;
-            if (input == -1) {
-                eof = true;
-            }
-        } catch (IOException ex) {
-            // do nothing for now
-            eof = true;
+            byteRead = this.inputStream.read();
+        } catch (final IOException ex) {
+            throw new UncheckedIOException("I/O Exception while advancing through input stream!", ex);
+        }
+
+        this.currentCharacter = (char) byteRead;
+        this.columnNum++;
+
+        if (byteRead == -1) {
+            this.reachedEndOfFile = true;
         }
     }
 
-    /// Insert the current character into the curStr
-    /// and advanced the lexer
-    private void consume() {
-        curString.append(cur);
-        read();
+    // Append our current character to the build-in-progress string and read the next character
+    private void consumeCurrentCharacter() {
+        this.currentTokenString.append(this.currentCharacter);
+
+        this.readNextLiteralCharacter();
     }
 }

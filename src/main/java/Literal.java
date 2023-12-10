@@ -1,26 +1,21 @@
-public class Literal implements ParseTree
-{
-  private Lexeme literal;
+public class Literal implements ParseTree {
+    private final Lexeme literal;
 
-  Literal(Lexeme literal) {
-    this.literal = literal;
-  }
-
-  public EvalResult eval(RefEnv env)
-  {
-    EvalResult result = new EvalResult();
-
-    if(literal.tok == TokenType.NUMBER) {
-      result.setValue(Integer.parseInt(literal.str));
-    } else {
-      result.setValue(Double.parseDouble(literal.str));
+    Literal(Lexeme literal) {
+        this.literal = literal;
     }
-    return result;
-  }
 
-  
+    public EvalResult eval(final RefEnv env) {
+        final EvalResult result = new EvalResult();
 
-  public void print(int depth) {
-    System.out.printf("%"+(depth+1)+"s%s\n", "", literal.str);
-  }
+        if (this.literal.tokenType() == TokenType.NUMBER) {
+            result.setValue(Double.parseDouble(this.literal.associatedCharacters()));
+        }
+
+        return result;
+    }
+
+    public void print(int depth) {
+        System.out.printf("%" + (depth + 1) + "s%s\n", "", this.literal.associatedCharacters());
+    }
 }
