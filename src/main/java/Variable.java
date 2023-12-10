@@ -6,19 +6,19 @@ public class Variable implements ParseTree {
   }
 
   public EvalResult eval(RefEnv env) {
-    return env.getVariable(this.tok.str);
+    return env.getVariable(this.tok.associatedCharacters());
   }
 
   public String name() {
-    return tok.str;
+    return tok.associatedCharacters();
   }
 
 
   public void set(RefEnv env, EvalResult val) {
-    env.setVariable(this.tok.str, val);
+    env.setVariable(this.tok.associatedCharacters(), val);
   }
 
   public void print(int depth) {
-    System.out.printf("%" + (depth + 1) + "s%s\n", "", tok.str);
+    System.out.printf("%" + (depth + 1) + "s%s\n", "", tok.associatedCharacters());
   }
 }

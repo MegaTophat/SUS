@@ -13,12 +13,12 @@ public class RecordDeclaration extends NaryOp {
     EvalResult value = new EvalResult();
     value.setValue(this);
     
-    env.setVariable(id.str, value);
+    env.setVariable(id.associatedCharacters(), value);
     return null;
   }
 
   public void print(int depth) {
-    System.out.printf("%"+(depth+1)+"sRECORD %s\n", "", id.str);
+    System.out.printf("%"+(depth+1)+"sRECORD %s\n", "", id.associatedCharacters());
     
     for(int i=0; i<getSize(); i++) {
       getChild(i).print(depth+1);
