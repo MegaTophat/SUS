@@ -1,3 +1,8 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Parser {
     private final Lexer lexer;
 
@@ -8,8 +13,18 @@ public class Parser {
     /**
      * Test the parser
      */
-    public static void main(String[] args) {
-        Lexer lexer = new Lexer(System.in);
+    public static void main(String[] args) throws IOException {
+        final InputStream inputStream;
+
+        if (args.length > 0) {
+            final String workingDirectory = System.getProperty("user.dir");
+            final File file = new File(workingDirectory, args[0]);
+
+            inputStream = new FileInputStream(file);
+        } else {
+            inputStream = System.in;
+        }
+        Lexer lexer = new Lexer(inputStream);
         Parser parser = new Parser(lexer);
 
         parser.parse().print(0);
@@ -91,6 +106,7 @@ public class Parser {
      * | < Conditional > NEWLINE
      * | < Loop > NEWLINE
      * | < Expression > NEWLINE
+     * | < Comment > NEWLINE
      * | NEWLINE
      */
     private ParseTree parseStatement() {
@@ -107,6 +123,8 @@ public class Parser {
             result = parseConditional();
         } else if (has(TokenType.SUSMONEY)) {
             result = parseLoop();
+        } else if (has(TokenType.COMMENT)) {
+                result = parseComment();
         } else if (!has(TokenType.NEWLINE)) {
             result = parseExpression();
         }
@@ -115,6 +133,12 @@ public class Parser {
             mustBe(TokenType.NEWLINE);
         }
         return result;
+    }
+
+    private ParseTree parseComment() {
+        final Lexeme lexeme = mustBe(TokenType.COMMENT);
+
+        return new Comment(lexeme);
     }
 
     /**
@@ -337,8 +361,15 @@ public class Parser {
 
     /*
      * < Expression > ::= < Term > < Expression' >
+     *                  | < String >
      */
     private ParseTree parseExpression() {
+        Lexeme token = match(TokenType.STRING);
+
+        if (token != null) {
+            return new SusString(token);
+        }
+
         ParseTree left = parseTerm();
         return parseExpression2(left);
     }

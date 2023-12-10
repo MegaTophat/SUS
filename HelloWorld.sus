@@ -3,7 +3,9 @@ y = 4
 PRINT "Hello World"
 z = x + y
 PRINT z
-t = (x + y) + 5
+t = (x + y) + 3
+PRINT ""
+shower thought this should be like 12 or something sandwich
 PRINT t
 sus t < 14
   PRINT "Sus indeed"

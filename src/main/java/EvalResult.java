@@ -54,6 +54,10 @@ public class EvalResult
     return b;
   }
 
+  public String asString() {
+    return this.s;
+  }
+
   public RecordDeclaration asRecordDecl() {
     return recordDecl;
   }
