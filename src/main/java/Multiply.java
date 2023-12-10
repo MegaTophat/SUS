@@ -6,11 +6,8 @@ public class Multiply extends BinaryOp {
     EvalResult r = getRight().eval(env);
     EvalResult result = new EvalResult();
 
-    if(l.getType() == EvalType.REAL || r.getType() == EvalType.REAL) {
+    if(l.getType() == EvalType.NUMBER || r.getType() == EvalType.NUMBER) {
       double x = l.asReal() * r.asReal();
-      result.setValue(x);
-    } else {
-      int x = l.asInteger() * r.asInteger();
       result.setValue(x);
     }
 

@@ -1,6 +1,6 @@
 public enum EvalType {
-  INTEGER,
-  REAL,
+  NUMBER,
+  STRING,
   BOOLEAN,
   VOID,
   RECORD_DECL,

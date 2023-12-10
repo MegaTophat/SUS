@@ -1,4 +1,5 @@
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,31 +11,47 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Sus {
-    private int currentLexemeIndex;
-    private final Map<String, Integer> variables;
+    public static void repl(){
+        Scanner scan = new Scanner(System.in);
+        RefEnv env = new RefEnv();
 
-    public Sus(String sourceCode) {
-        this.currentLexemeIndex = 0;
-        this.variables = new HashMap<>();
+        while(true) {
+            System.out.print("> ");
+            System.out.flush();
+            String line = scan.nextLine() + "\n";
+            Lexer lex = new Lexer(new ByteArrayInputStream(line.getBytes(StandardCharsets.UTF_8)));
+            Parser parser = new Parser(lex);
+            ParseTree program = parser.parse();
+            EvalResult result = program.eval(env);
+
+            if(result != null) {
+                System.out.println(result.asReal());
+            }
+        }
     }
-//hello
-    public static void main(String[] args) throws IOException {
-        final String sourceCode;
 
-        if (args.length == 0) {
-            // Read filename from the user
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter the filename: ");
-            String filename = scanner.nextLine();
+    public static void runFile(String fileName) {
+        try {
+            InputStream file = new FileInputStream(fileName);
+            RefEnv env = new RefEnv();
+            Lexer lex = new Lexer(file);
+            Parser parser = new Parser(lex);
 
-            sourceCode = Files.readString(Path.of(filename));
-            scanner.close();
-        } else {
-            final String fileName = args[0];
-
-            sourceCode = Files.readString(Path.of(fileName));
+            ParseTree program = parser.parse();
+            program.eval(env);
+        } catch(FileNotFoundException ex) {
+            System.err.println("File not found: " + fileName);
         }
 
-        Sus interpreter = new Sus(sourceCode);
+    }
+
+
+    public static void main(String [] args ) {
+        // do a repl if args is empty
+        if(args.length == 0) {
+            repl();
+        } else {
+            runFile(args[0]);
+        }
     }
 }

@@ -6,7 +6,7 @@ public class LessOrEqual extends BinaryOp
     EvalResult r = getRight().eval(env);
     EvalResult result = new EvalResult();
 
-    if(l.getType() == EvalType.REAL || r.getType() == EvalType.REAL) {
+    if(l.getType() == EvalType.NUMBER || r.getType() == EvalType.NUMBER) {
       result.setValue(l.asReal() <= r.asReal());
     } else {
       result.setValue(l.asInteger() <= r.asInteger());

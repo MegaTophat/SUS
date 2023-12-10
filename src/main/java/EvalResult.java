@@ -1,8 +1,8 @@
 public class EvalResult 
 {
   private EvalType type;
-  private int i;
-  private double d;
+  private double n;
+  private String s;
   private boolean b;
   private RecordDeclaration recordDecl;
   private EvalResult [] array;
@@ -12,14 +12,14 @@ public class EvalResult
   }
   
   // set the value of the object and infer its type
-  public void setValue(int value) {
-    type = EvalType.INTEGER;
-    i=value;
+  public void setValue(double value) {
+    type = EvalType.NUMBER;
+    n=value;
   }
 
-  public void setValue(double value) {
-    type = EvalType.REAL;
-    d = value;
+  public void setValue(String value) {
+    type = EvalType.STRING;
+    s = value;
   }
 
 
@@ -40,21 +40,13 @@ public class EvalResult
   }
 
 
-  public int asInteger() {
-    if(type == EvalType.INTEGER) {
-      return i;
-    } else {
-      return (int) d;
-    }
+  public double asInteger() {
+    return n;
   }
 
 
   public double asReal() {
-    if(type == EvalType.REAL) {
-      return d;
-    } else {
-      return (double) i;
-    }
+    return n;
   }
 
 
@@ -80,11 +72,6 @@ public class EvalResult
 
 
   public String toString() {
-    if(type == EvalType.INTEGER) {
-      return ""+i;
-    } else {
-      return ""+d;
-    }
+    return ""+n;
   }
-  
 }
