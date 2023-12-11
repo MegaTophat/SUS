@@ -1,24 +1,20 @@
 public class Variable implements ParseTree {
-  private Lexeme tok;
+    private final Lexeme token;
 
-  Variable(Lexeme tok) {
-    this.tok = tok;
-  }
+    Variable(final Lexeme token) {
+        this.token = token;
+    }
 
-  public EvalResult eval(RefEnv env) {
-    return env.getVariable(this.tok.associatedCharacters());
-  }
+    public EvaluationResult evaluate(ReferenceEnvironment referenceEnvironment) {
+        return referenceEnvironment.getVariable(this.token.associatedCharacters());
+    }
 
-  public String name() {
-    return tok.associatedCharacters();
-  }
+    public String name() {
+        return this.token.associatedCharacters();
+    }
 
 
-  public void set(RefEnv env, EvalResult val) {
-    env.setVariable(this.tok.associatedCharacters(), val);
-  }
-
-  public void print(int depth) {
-    System.out.printf("%" + (depth + 1) + "s%s\n", "", tok.associatedCharacters());
-  }
+    public void set(final ReferenceEnvironment referenceEnvironment, EvaluationResult newValue) {
+        referenceEnvironment.setVariable(this.token.associatedCharacters(), newValue);
+    }
 }

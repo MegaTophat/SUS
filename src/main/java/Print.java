@@ -1,28 +1,28 @@
+import java.util.List;
+
 public class Print extends UnaryOp {
-  public EvalResult eval(RefEnv env) {
-    display(getChild().eval(env));
-    return null;
-  }
+    public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
+        this.display(
+                this.getChild().evaluate(referenceEnvironment)
+        );
 
-  private void display(EvalResult result) {
-    if(result.getType() == EvalType.ARRAY) {
-      display_array(result.asArray());
-    } else if (result.getType() == EvalType.STRING) {
-      final String string = result.asString();
-      System.out.println(string.substring(1, string.length() - 1));
-    } else {
-      System.out.println(result);
+        return null;
     }
-  }
 
-  private void display_array(EvalResult[] array) {
-    for(EvalResult r : array) {
-      display(r);
+    private void display(final EvaluationResult result) {
+        if (result.getEvaluationType() == EvaluationType.ARRAY) {
+            this.display_array(result.asList());
+        } else if (result.getEvaluationType() == EvaluationType.STRING) {
+            final String string = result.asString();
+            System.out.println(string.substring(1, string.length() - 1));
+        } else {
+            System.out.println(result);
+        }
     }
-  }
 
-  public void print(int depth) {
-    getChild().print(depth + 1);
-    System.out.printf("%" + (depth + 1) + "sprint\n", "");
-  }
+    private void display_array(final List<EvaluationResult> array) {
+        for (final EvaluationResult r : array) {
+            this.display(r);
+        }
+    }
 }

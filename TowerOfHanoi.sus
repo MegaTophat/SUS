@@ -1,0 +1,55 @@
+numDisks = 3
+fromRod = ARRAY
+toRod = ARRAY
+auxRod = ARRAY
+fromRod`0~ = 3
+fromRod`1~ = 2
+fromRod`2~ = 1
+
+PRINT "Tower of Hanoi Solution for "
+PRINT numDisks
+PRINT "disks:"
+
+shower thought move top disk from origin to destination sandwich
+PRINT "Move disk from A to C"
+toRod`0~ = fromRod`2~
+fromRod`2~ = 0
+
+shower thought move middle disk from origin to auxiliary sandwich
+PRINT "Move disk from A to B"
+auxRod`0~ = fromRod`1~
+fromRod`1~ = 0
+
+shower thought move top disk from destination to auxiliary sandwich
+PRINT "Move disk from C to B"
+auxRod`1~ = toRod`0~
+toRod`0~ = 0
+
+shower thought move bottom disk from origin to destination sandwich
+PRINT "Move disk from A to C"
+toRod`0~ = fromRod`0~
+fromRod`0~ = 0
+
+shower thought move top disk from auxiliary to origin sandwich
+PRINT "Move disk from B to A"
+fromRod`0~ = auxRod`1~
+auxRod`1~ = 0
+
+shower thought move middle disk from auxiliary rod to destination sandwich
+PRINT "Move disk from B to C"
+toRod`1~ = auxRod`0~
+auxRod`0~ = 0
+
+shower thought move top disk from origin to destination sandwich
+PRINT "Move disk from A to C"
+toRod`2~ = fromRod`0~
+fromRod`0~ = 0
+
+PRINT "Done"
+PRINT ""
+PRINT "Rod A:"
+PRINT fromRod
+PRINT "Rod B:"
+PRINT auxRod
+PRINT "Rod C:"
+PRINT toRod

@@ -1,32 +1,26 @@
 import java.util.ArrayList;
 
 public abstract class NaryOp implements ParseTree {
-  protected ArrayList<ParseTree> children;
+    protected final ArrayList<ParseTree> children;
 
-  public NaryOp() {
-    children = new ArrayList<ParseTree>();
-  }
-
-
-  // add a child to the list
-  public void addChild(ParseTree child) {
-    children.add(child);
-  }
-
-
-  // retrieve a child from the list
-  public ParseTree getChild(int index) {
-    // protect against index errors 
-    if(index < 0 || index >= children.size()) {
-      return null;
+    public NaryOp() {
+        this.children = new ArrayList<>();
     }
 
-    return children.get(index);
-  }
+    public void addChild(final ParseTree child) {
+        this.children.add(child);
+    }
 
-  // retrieve the size of the list
-  public int getSize() {
-    return children.size();
-  }
-  
+    public ParseTree getChild(final int index) {
+        // protect against index errors
+        if (index < 0 || index >= children.size()) {
+            return null;
+        }
+
+        return this.children.get(index);
+    }
+
+    public int getSize() {
+        return this.children.size();
+    }
 }

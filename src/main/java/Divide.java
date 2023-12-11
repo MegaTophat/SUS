@@ -1,24 +1,13 @@
-public class Divide extends BinaryOp
-{
-  public EvalResult eval(RefEnv env) {
-    // get the operands
-    EvalResult l = getLeft().eval(env);
-    EvalResult r = getRight().eval(env);
-    EvalResult result = new EvalResult();
-    
-    if(l.getType() == EvalType.NUMBER || r.getType() == EvalType.NUMBER) {
-      double x = l.asReal() / r.asReal();
-      result.setValue(x);
+public class Divide extends BinaryOp {
+    public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
+        // get the operands
+        final EvaluationResult l = this.getLeft().evaluate(referenceEnvironment);
+        final EvaluationResult r = this.getRight().evaluate(referenceEnvironment);
+        final EvaluationResult result = new EvaluationResult();
+        final double x = l.asNumber() / r.asNumber();
+
+        result.setValue(x);
+
+        return result;
     }
-
-    
-    return result;
-  }
-
-
-  public void print(int depth)  {
-    getRight().print(depth+1);
-    System.out.printf("%"+(depth+1)+"s/\n", "");
-    getLeft().print(depth+1);
-  }
 }

@@ -1,14 +1,12 @@
-public class ArrayAccess extends BinaryOp
-{
-  public EvalResult eval(RefEnv env)
-  {
-    return null;
-  }
+import java.util.List;
 
-  public void print(int depth) 
-  {
-    getRight().print(depth+1);
-    System.out.printf("%"+(depth+1)+"s[] (array index)\n", "");
-    getLeft().print(depth+1);
-  }
+public class ArrayAccess extends BinaryOp {
+    public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
+        final Variable arrayVariable = (Variable) this.getLeft();
+        final String arrayVariableName = arrayVariable.name();
+        final int elementToGet = (int) this.getRight().evaluate(referenceEnvironment).asNumber();
+        final List<EvaluationResult> actualList = referenceEnvironment.getVariable(arrayVariableName).asList();
+
+        return actualList.get(elementToGet);
+    }
 }

@@ -114,13 +114,13 @@ public class Lexer {
             case '*' -> TokenType.TIMES;
             case '/' -> TokenType.DIVIDE;
             case '^' -> TokenType.POW;
-            case '`' -> TokenType.ARRAY_BOUNDARY;
+            case '`' -> TokenType.ARRAY_START;
+            case '~' -> TokenType.ARRAY_END;
             case '®' -> TokenType.REMAINDER;
             case '(' -> TokenType.LPAREN;
             case ')' -> TokenType.RPAREN;
             case '\n' -> TokenType.NEWLINE;
             case '=' -> TokenType.EQUAL;
-            case '.' -> TokenType.DOT;
             default -> TokenType.UNKNOWN;
         };
 

@@ -1,14 +1,11 @@
-public abstract class UnaryOp implements ParseTree 
-{
-  private ParseTree child;
+public abstract class UnaryOp implements ParseTree {
+    private ParseTree child;
 
-  // set the child
-  public void setChild(ParseTree child) {
-    this.child = child;
-  }
+    public ParseTree getChild() {
+        return this.child;
+    }
 
-  // get the child
-  public ParseTree getChild() {
-    return child;
-  }
+    public void setChild(final ParseTree child) {
+        this.child = child;
+    }
 }

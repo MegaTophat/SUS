@@ -1,8 +1,7 @@
-public enum EvalType {
+public enum EvaluationType {
   NUMBER,
   STRING,
   BOOLEAN,
   VOID,
-  RECORD_DECL,
   ARRAY
 }

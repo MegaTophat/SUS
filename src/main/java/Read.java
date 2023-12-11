@@ -1,27 +1,23 @@
 import java.util.Scanner;
 
 public class Read extends UnaryOp {
-  public EvalResult eval(RefEnv env) {
-    Scanner scan = new Scanner(System.in);
-    
-    Variable v = (Variable) getChild();
-    System.out.print(v.name() + "=");
-    double num = scan.nextDouble();
+    private static final Scanner SCANNER = new Scanner(System.in);
 
-    EvalResult value = new EvalResult();
-    if(num % 1 == 0) { 
-      // integer input
-      value.setValue((int)num);
-    } else {
-      //double input
-      value.setValue(num);
+    public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
+        final Variable variable = (Variable) getChild();
+        final String line = SCANNER.nextLine();
+        final EvaluationResult value = new EvaluationResult();
+
+        try {
+            final double doubleInput = Double.parseDouble(line);
+
+            value.setValue(doubleInput);
+        } catch (final NumberFormatException ex) {
+            value.setValue(line);
+        }
+
+        variable.set(referenceEnvironment, value);
+
+        return null;
     }
-    v.set(env, value);
-    return null;
-  }
-
-  public void print(int depth) {
-    getChild().print(depth + 1);
-    System.out.printf("%" + (depth + 1) + "sinput\n", "");
-  }
 }

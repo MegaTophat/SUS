@@ -6,15 +6,11 @@ public final class SusString implements ParseTree {
     }
 
     @Override
-    public EvalResult eval(final RefEnv env) {
-        final EvalResult evalResult = new EvalResult();
-        evalResult.setValue(this.stringLexeme.associatedCharacters());
+    public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
+        final EvaluationResult evaluationResult = new EvaluationResult();
 
-        return evalResult;
-    }
+        evaluationResult.setValue(this.stringLexeme.associatedCharacters());
 
-    @Override
-    public void print(final int depth) {
-        System.out.printf("%" + (depth + 1) + "s%s\n", "", this.stringLexeme.associatedCharacters());
+        return evaluationResult;
     }
 }

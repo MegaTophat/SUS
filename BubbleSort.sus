@@ -1,14 +1,14 @@
 array = ARRAY
-array`0` = 20
-array`1` = 49
-array`2` = 10
-array`3` = 38
-array`4` = 50
-array`5` = 79
-array`6` = -20
-array`7` = 89
-array`8` = 109
-array`9` = 25
+array`0~ = 20
+array`1~ = 49
+array`2~ = 10
+array`3~ = 38
+array`4~ = 50
+array`5~ = 79
+array`6~ = 20
+array`7~ = 89
+array`8~ = 109
+array`9~ = 25
 
 n = 10
 i = 0
@@ -16,15 +16,22 @@ i = 0
 PRINT array
 susmoney i < n - 1 swaus
   j = 0
-  susmoney j < n - i swaus
-    sus array`j` > array `j + 1` swaus
+  susmoney j < n - (i + 1) swaus
+    sus array`j~ > array`j + 1~ swaus
       shower thought temp variable to swap elements sandwich
       stringVariable = "this is a string"
 
-      temp = array`j`
-      array`j` = array`j + 1`
-      array`j + 1` = temp
+      temp = array`j~
+      array`j~ = array`j + 1~
+      array`j + 1~ = temp
     swotus
+
+    j = j + 1
   swotus
+
+  i = i + 1
 swotus
+
+PRINT ""
+PRINT "Sorted Array"
 PRINT array

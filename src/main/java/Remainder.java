@@ -1,19 +1,13 @@
 public class Remainder extends BinaryOp
 {
-  public EvalResult eval(RefEnv env) {
+  public EvaluationResult evaluate(final ReferenceEnvironment referenceEnvironment) {
     // get the operands
-    EvalResult l = getLeft().eval(env);
-    EvalResult r = getRight().eval(env);
-    EvalResult result = new EvalResult();
+    final EvaluationResult l = this.getLeft().evaluate(referenceEnvironment);
+    final EvaluationResult r = this.getRight().evaluate(referenceEnvironment);
+    final EvaluationResult result = new EvaluationResult();
 
-    result.setValue(l.asInteger() % r.asInteger());
+    result.setValue((int) l.asNumber() % (int) r.asNumber());
     
     return result;
-  }
-
-  public void print(int depth)  {
-    getRight().print(depth+1);
-    System.out.printf("%"+(depth+1)+"sremainder\n", "");
-    getLeft().print(depth+1);
   }
 }

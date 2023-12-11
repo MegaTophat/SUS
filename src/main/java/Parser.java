@@ -1,47 +1,24 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 public class Parser {
     private final Lexer lexer;
 
-    public Parser(Lexer lexer) {
+    public Parser(final Lexer lexer) {
         this.lexer = lexer;
-    }
-
-    /**
-     * Test the parser
-     */
-    public static void main(String[] args) throws IOException {
-        final InputStream inputStream;
-
-        if (args.length > 0) {
-            final String workingDirectory = System.getProperty("user.dir");
-            final File file = new File(workingDirectory, args[0]);
-
-            inputStream = new FileInputStream(file);
-        } else {
-            inputStream = System.in;
-        }
-        Lexer lexer = new Lexer(inputStream);
-        Parser parser = new Parser(lexer);
-
-        parser.parse().print(0);
     }
 
     public ParseTree parse() {
         this.lexer.nextLexeme();  //linitialize the lexer
-        return parseBlock();
+
+        return this.parseBlock();
     }
 
     /**
-     * Attempt to match tok.
+     * Attempt to match token.
      * If it matches, return the lexeme. If it does not match, return null.
      */
-    private Lexeme match(TokenType tok) {
-        Lexeme lexeme = this.lexer.currentLexeme();
-        if (lexeme.tokenType() == tok) {
+    private Lexeme match(final TokenType token) {
+        final Lexeme lexeme = this.lexer.currentLexeme();
+
+        if (lexeme.tokenType() == token) {
             // match, advance lexer, return the match
             this.lexer.nextLexeme();
 
@@ -55,8 +32,8 @@ public class Parser {
     /**
      * Attempt to match a token. Returns lexeme on match, halts the program on failure.
      */
-    private Lexeme mustBe(TokenType tok) {
-        final Lexeme lexeme = match(tok);
+    private Lexeme mustBe(TokenType token) {
+        final Lexeme lexeme = this.match(token);
 
         if (lexeme == null) {
             System.out.println("Parse Error: " + lexer.currentLexeme().toString());
@@ -70,7 +47,7 @@ public class Parser {
      * Return true if one of the tokenTypeTypes in the list are
      * currently in the lexer
      */
-    private boolean has(TokenType... tokenTypeTypes) {
+    private boolean has(final TokenType... tokenTypeTypes) {
         final Lexeme lexeme = this.lexer.currentLexeme();
 
         for (final TokenType tokenType : tokenTypeTypes) {
@@ -83,14 +60,15 @@ public class Parser {
     }
 
     /**
-     * < Branch > ::= < Branch > < Statement >
+     * < Block > ::= < Block > < Statement >
      * | < Statement >
      */
     private ParseTree parseBlock() {
-        final Branch result = new Branch();
+        final Block result = new Block();
 
         while (this.lexer.currentLexeme().tokenType() != TokenType.EOF && this.lexer.currentLexeme().tokenType() != TokenType.SWOTUS) {
-            ParseTree statement = parseStatement();
+            final ParseTree statement = this.parseStatement();
+
             if (statement != null) {
                 result.addChild(statement);
             }
@@ -104,90 +82,99 @@ public class Parser {
      * | < IO-Operation > NEWLINE
      * | < Array-Dim > NEWLINE
      * | < Conditional > NEWLINE
-     * | < Loop > NEWLINE
+     * | < SusMoney > NEWLINE
      * | < Expression > NEWLINE
      * | < Comment > NEWLINE
      * | NEWLINE
      */
     private ParseTree parseStatement() {
         ParseTree result = null;
-        Lexeme tok;
 
-        if (has(TokenType.VARIABLE_NAME)) {
+        if (this.has(TokenType.VARIABLE_NAME)) {
             // Handle an ID statement / expression
-            result = parseRef();
-            result = parseStatement2(result);
-        } else if (has(TokenType.READ, TokenType.PRINT)) {
-            result = parseIOOperation();
-        } else if (has(TokenType.SUS)) {
-            result = parseConditional();
-        } else if (has(TokenType.SUSMONEY)) {
-            result = parseLoop();
-        } else if (has(TokenType.COMMENT)) {
-                result = parseComment();
-        } else if (!has(TokenType.NEWLINE)) {
-            result = parseExpression();
+            result = this.parseRef();
+            result = this.parseStatement2(result);
+        } else if (this.has(TokenType.READ, TokenType.PRINT)) {
+            result = this.parseIOOperation();
+        } else if (this.has(TokenType.ARRAY)) {
+            result = this.parseArrayDimension();
+        } else if (this.has(TokenType.SUS)) {
+            result = this.parseConditional();
+        } else if (this.has(TokenType.SUSMONEY)) {
+            result = this.parseLoop();
+        } else if (this.has(TokenType.COMMENT)) {
+            result = this.parseComment();
+        } else if (!this.has(TokenType.NEWLINE)) {
+            result = this.parseExpression();
         }
 
-        if (match(TokenType.EOF) == null) {
-            mustBe(TokenType.NEWLINE);
+        if (this.match(TokenType.EOF) == null) {
+            this.mustBe(TokenType.NEWLINE);
         }
         return result;
     }
 
     private ParseTree parseComment() {
-        final Lexeme lexeme = mustBe(TokenType.COMMENT);
+        this.mustBe(TokenType.COMMENT);
 
-        return new Comment(lexeme);
+        return new Comment();
     }
 
     /**
      * < Statement' > ::= EQUAL < Expression >
      * | < Factor' > < Term' > < Expression' >
      */
-    private ParseTree parseStatement2(ParseTree left) {
+    private ParseTree parseStatement2(final ParseTree left) {
         // match an assignment
-        if (match(TokenType.EQUAL) != null) {
-            Assignment result = new Assignment();
+        if (this.match(TokenType.EQUAL) != null) {
+            final Assignment result = new Assignment();
+
             result.setLeft(left);
-            result.setRight(parseExpression());
+            result.setRight(this.parseExpression());
+
             return result;
         }
 
         // an expression beginning with an ID
-        ParseTree result = parseFactor2(left);
-        result = parseTerm2(result);
-        result = parseExpression2(result);
+        ParseTree result = this.parseFactor2(left);
+        result = this.parseTerm2(result);
+        result = this.parseExpression2(result);
+
         return result;
     }
 
     /**
-     * < Conditional > ::= IF < Condition > NEWLINE < Branch > END IF
+     * < Conditional > ::= IF < Condition > NEWLINE < Block > END IF
      */
     private ParseTree parseConditional() {
-        mustBe(TokenType.SUS);
-        ParseTree condition = parseCondition();
-        mustBe(TokenType.NEWLINE);
-        ParseTree program = parseBlock();
-        mustBe(TokenType.SWOTUS);
+        this.mustBe(TokenType.SUS);
+        final ParseTree condition = this.parseCondition();
+        this.mustBe(TokenType.SWAUS);
+        this.mustBe(TokenType.NEWLINE);
+        final ParseTree program = this.parseBlock();
+        this.mustBe(TokenType.SWOTUS);
 
-        Conditional result = new Conditional();
+        final Conditional result = new Conditional();
+
         result.setLeft(condition);
         result.setRight(program);
+
         return result;
     }
 
     /**
-     * < Loop > ::= sus < Condition > swaus < Branch > swotus
+     * < SusMoney > ::= sus < Condition > swaus < Block > swotus
      */
     private ParseTree parseLoop() {
-        mustBe(TokenType.SUSMONEY);
-        ParseTree condition = parseCondition();
-        mustBe(TokenType.NEWLINE);
-        ParseTree program = parseBlock();
-        mustBe(TokenType.SWOTUS);
+        this.mustBe(TokenType.SUSMONEY);
+        final ParseTree condition = this.parseCondition();
+        this.mustBe(TokenType.SWAUS);
+        this.mustBe(TokenType.NEWLINE);
+        final ParseTree program = this.parseBlock();
+        this.mustBe(TokenType.SWOTUS);
 
-        Loop result = new Loop();
+        final SusMoney result = new SusMoney();
+
         result.setLeft(condition);
         result.setRight(program);
 
@@ -198,8 +185,9 @@ public class Parser {
      * < Condition > ::= < Expression > < Condition' >
      */
     private ParseTree parseCondition() {
-        ParseTree left = parseExpression();
-        return parseCondition2(left);
+        final ParseTree left = this.parseExpression();
+
+        return this.parseCondition2(left);
     }
 
     /**
@@ -211,27 +199,33 @@ public class Parser {
      * | EQUAL < Expression >
      * | NE < Expression >
      */
-    private ParseTree parseCondition2(ParseTree left) {
+    private ParseTree parseCondition2(final ParseTree left) {
         final BinaryOp result;
 
-        if (match(TokenType.GREATER_THAN) != null) {
+        if (this.match(TokenType.GREATER_THAN) != null) {
             result = new Greater();
-        } else if (match(TokenType.LESS_THAN) != null) {
+        } else if (this.match(TokenType.GREATER_THAN_OR_EQUAL) != null) {
+            result = new GreaterOrEqual();
+        } else if (this.match(TokenType.LESS_THAN) != null) {
             result = new Less();
-        } else if (match(TokenType.LESS_THAN_OR_EQUAL) != null) {
+        } else if (this.match(TokenType.LESS_THAN_OR_EQUAL) != null) {
             result = new LessOrEqual();
-        } else if (match(TokenType.EQUAL) != null) {
+        } else if (this.match(TokenType.EQUAL) != null) {
             result = new Equal();
-        } else if (mustBe(TokenType.NOT_EQUAL) != null) {
+        } else if (this.mustBe(TokenType.NOT_EQUAL) != null) {
             result = new NotEqual();
         } else {
             return null;
         }
 
         result.setLeft(left);
-        result.setRight(parseExpression());
+        result.setRight(this.parseExpression());
 
         return result;
+    }
+
+    private ParseTree parseArrayDimension() {
+        return new ArrayDimension();
     }
 
     /**
@@ -239,15 +233,20 @@ public class Parser {
      * | READ < Ref >
      */
     private ParseTree parseIOOperation() {
-        if (match(TokenType.PRINT) != null) {
-            Print result = new Print();
-            result.setChild(parseExpression());
+        if (this.match(TokenType.PRINT) != null) {
+            final Print result = new Print();
+
+            result.setChild(this.parseExpression());
+
             return result;
         }
 
-        mustBe(TokenType.READ);
-        Read result = new Read();
-        result.setChild(parseRef());
+        this.mustBe(TokenType.READ);
+
+        final Read result = new Read();
+
+        result.setChild(this.parseRef());
+
         return result;
     }
 
@@ -255,8 +254,9 @@ public class Parser {
      * < Term > ::= < Factor > < Term' >
      */
     private ParseTree parseTerm() {
-        ParseTree left = parseFactor();
-        return parseTerm2(left);
+        final ParseTree left = this.parseFactor();
+
+        return this.parseTerm2(left);
     }
 
     /**
@@ -265,75 +265,73 @@ public class Parser {
      * | MOD < Factor > < Term' >
      * | ""
      */
-    private ParseTree parseTerm2(ParseTree left) {
-        if (match(TokenType.TIMES) != null) {
-            Multiply result = new Multiply();
-            result.setLeft(left);
-            result.setRight(parseFactor());
-            return parseTerm2(result);
-        } else if (match(TokenType.DIVIDE) != null) {
-            Divide result = new Divide();
-            result.setLeft(left);
-            result.setRight(parseTerm());
-            return parseTerm2(result);
+    private ParseTree parseTerm2(final ParseTree left) {
+        if (this.match(TokenType.TIMES) != null) {
+            final Multiply result = new Multiply();
 
-        } else if (match(TokenType.REMAINDER) != null) {
-            Remainder result = new Remainder();
             result.setLeft(left);
-            result.setRight(parseFactor());
-            return parseTerm2(result);
+            result.setRight(this.parseFactor());
+            return this.parseTerm2(result);
+        } else if (this.match(TokenType.DIVIDE) != null) {
+            final Divide result = new Divide();
+
+            result.setLeft(left);
+            result.setRight(this.parseTerm());
+
+            return this.parseTerm2(result);
+
+        } else if (this.match(TokenType.REMAINDER) != null) {
+            final Remainder result = new Remainder();
+
+            result.setLeft(left);
+            result.setRight(this.parseFactor());
+
+            return this.parseTerm2(result);
         }
 
         return left;
     }
 
     /**
-     * < Number > ::= INTLIT
-     * | REALLIT
+     * < Number > ::= REALLIT
      * | < Ref >
      */
     private ParseTree parseNumber() {
-        Lexeme tok = match(TokenType.NUMBER);
-        if (tok != null) {
-            return new Literal(tok);
+        if (this.has(TokenType.VARIABLE_NAME)) {
+            return this.parseRef();
         }
 
-        if (has(TokenType.VARIABLE_NAME)) {
-            return parseRef();
-        }
+        final Lexeme token = this.mustBe(TokenType.NUMBER);
 
-        tok = mustBe(TokenType.NUMBER);
-        return new Literal(tok);
+        return new Literal(token);
     }
 
     /*
      * < Ref > ::= ID < Ref' >
      */
-    ParseTree parseRef() {
-        Lexeme tok = mustBe(TokenType.VARIABLE_NAME);
+    private ParseTree parseRef() {
+        final Lexeme token = this.mustBe(TokenType.VARIABLE_NAME);
 
-        return parseRef2(new Variable(tok));
+        return this.parseRef2(new Variable(token));
     }
 
     /*
-     * < Ref' > ::= LBRACKET < Expression > RBRACKET < Ref' >
-     *            | DOT ID < Ref' >
+     * < Ref' > ::= ` < Expression > ` < Ref' >
      *            | ""
      */
-    ParseTree parseRef2(ParseTree left) {
-        if (match(TokenType.ARRAY_BOUNDARY) != null) {
+    private ParseTree parseRef2(final ParseTree left) {
+        if (this.match(TokenType.ARRAY_START) != null) {
             // array access
-            ArrayAccess result = new ArrayAccess();
+            final ArrayAccess result = new ArrayAccess();
+
             result.setLeft(left);
-            result.setRight(parseExpression());
-            mustBe(TokenType.ARRAY_BOUNDARY);
-            return parseRef2(result);
-        } else if (match(TokenType.DOT) != null) {
-            // record access
-            RecordAccess result = new RecordAccess();
-            result.setLeft(left);
-            result.setRight(new Variable(mustBe(TokenType.VARIABLE_NAME)));
-            return parseRef2(result);
+            result.setRight(this.parseExpression());
+
+            this.mustBe(TokenType.ARRAY_END);
+
+            return this.parseRef2(result);
+        } else if (this.match(TokenType.ARRAY) != null) {
+            return this.parseArrayDimension();
         }
 
         // null string
@@ -346,16 +344,14 @@ public class Parser {
      * | LPAREN < Expression > RPAREN
      */
     private ParseTree parseExponent() {
-        if (match(TokenType.MINUS) != null) {
-            Negate result = new Negate();
-            result.setChild(parseExponent());
-            return result;
-        } else if (match(TokenType.LPAREN) != null) {
-            ParseTree result = parseExpression();
-            mustBe(TokenType.RPAREN);
+        if (this.match(TokenType.LPAREN) != null) {
+            final ParseTree result = this.parseExpression();
+
+            this.mustBe(TokenType.RPAREN);
+
             return result;
         } else {
-            return parseNumber();
+            return this.parseNumber();
         }
     }
 
@@ -364,14 +360,17 @@ public class Parser {
      *                  | < String >
      */
     private ParseTree parseExpression() {
-        Lexeme token = match(TokenType.STRING);
+        final Lexeme token;
 
-        if (token != null) {
+        if ((token = this.match(TokenType.STRING)) != null) {
             return new SusString(token);
+        } else if (this.match(TokenType.ARRAY) != null) {
+            return this.parseArrayDimension();
         }
 
-        ParseTree left = parseTerm();
-        return parseExpression2(left);
+        final ParseTree left = this.parseTerm();
+
+        return this.parseExpression2(left);
     }
 
     /**
@@ -379,20 +378,23 @@ public class Parser {
      * | MINUS < Term > < Expression' >
      * | ""
      */
-    public ParseTree parseExpression2(ParseTree left) {
-        if (match(TokenType.PLUS) != null) {
-            Add result = new Add();
+    public ParseTree parseExpression2(final ParseTree left) {
+        if (this.match(TokenType.PLUS) != null) {
+            final Add result = new Add();
+
             result.setLeft(left);
-            result.setRight(parseTerm());
-            return parseExpression2(result);
-        } else if (match(TokenType.MINUS) != null) {
-            Subtract result = new Subtract();
+            result.setRight(this.parseTerm());
+
+            return this.parseExpression2(result);
+        } else if (this.match(TokenType.MINUS) != null) {
+            final Subtract result = new Subtract();
+
             result.setLeft(left);
-            result.setRight(parseTerm());
-            return parseExpression2(result);
+            result.setRight(this.parseTerm());
+
+            return this.parseExpression2(result);
         }
 
-        // ""
         return left;
     }
 
@@ -400,20 +402,22 @@ public class Parser {
      * < Factor > ::= < Exponent > < Factor' >
      */
     public ParseTree parseFactor() {
-        ParseTree left = parseExponent();
-        return parseFactor2(left);
+        final ParseTree left = this.parseExponent();
+        return this.parseFactor2(left);
     }
 
     /**
      * < Factor' > ::= POW < Exponent > < Factor' >
      * | ""
      */
-    public ParseTree parseFactor2(ParseTree left) {
-        if (match(TokenType.POW) != null) {
-            Power result = new Power();
+    public ParseTree parseFactor2(final ParseTree left) {
+        if (this.match(TokenType.POW) != null) {
+            final Power result = new Power();
+
             result.setLeft(left);
-            result.setRight(parseExponent());
-            return parseFactor2(result);
+            result.setRight(this.parseExponent());
+
+            return this.parseFactor2(result);
         }
 
         return left;

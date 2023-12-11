@@ -25,8 +25,8 @@ public enum TokenType {
     NOT_EQUAL,
     VARIABLE_NAME,
     ARRAY,
-    ARRAY_BOUNDARY,
-    DOT,
+    ARRAY_START,
+    ARRAY_END,
     EOF,
     UNKNOWN
 }
